@@ -701,12 +701,12 @@ export class RdioScannerAdminService implements OnDestroy {
         };
 
         this.configWebSocket.onopen = () => {
-            this.configWebSocketReconnectAttempts = 0;
-
             this.configWebSocket?.send(this.token);
 
             if (this.configWebSocket instanceof WebSocket) {
                 this.configWebSocket.onmessage = (ev: MessageEvent<string>) => {
+                    this.configWebSocketReconnectAttempts = 0;
+
                     this.event.emit({ config: JSON.parse(ev.data) });
                 }
             }
