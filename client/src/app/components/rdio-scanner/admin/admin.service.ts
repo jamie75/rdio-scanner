@@ -636,7 +636,7 @@ export class RdioScannerAdminService implements OnDestroy {
     }
 
     newUnitForm(unit?: Unit): FormGroup {
-        return this.ngFormBuilder.group({
+        const form = this.ngFormBuilder.group({
             id: this.ngFormBuilder.control(unit?.id),
             label: this.ngFormBuilder.control(unit?.label, Validators.required),
             order: this.ngFormBuilder.control(unit?.order),
@@ -644,6 +644,29 @@ export class RdioScannerAdminService implements OnDestroy {
             unitFrom: this.ngFormBuilder.control(unit?.unitFrom, [Validators.min(1), this.validateUnitFrom()]),
             unitTo: this.ngFormBuilder.control(unit?.unitTo, [Validators.min(1), this.validateUnitTo()])
         });
+
+        let refreshingRangeValidation = false;
+        const refreshRangeValidation = (): void => {
+            if (refreshingRangeValidation) {
+                return;
+            }
+
+            refreshingRangeValidation = true;
+
+            try {
+                form.get('unitRef')?.updateValueAndValidity({ onlySelf: true, emitEvent: false });
+                form.get('unitFrom')?.updateValueAndValidity({ onlySelf: true, emitEvent: false });
+                form.get('unitTo')?.updateValueAndValidity({ onlySelf: true, emitEvent: false });
+            } finally {
+                refreshingRangeValidation = false;
+            }
+        };
+
+        form.get('unitFrom')?.valueChanges.subscribe(refreshRangeValidation);
+        form.get('unitTo')?.valueChanges.subscribe(refreshRangeValidation);
+        refreshRangeValidation();
+
+        return form;
     }
 
     private configWebSocketClose(): void {
@@ -958,11 +981,6 @@ export class RdioScannerAdminService implements OnDestroy {
                 return { range: true };
             }
 
-            setTimeout(() => {
-                control.parent?.get('unitRef')?.updateValueAndValidity();
-                control.parent?.get('unitTo')?.updateValueAndValidity();
-            });
-
             return null;
         }
     }
@@ -976,11 +994,6 @@ export class RdioScannerAdminService implements OnDestroy {
             if (typeof unitFrom === 'number' && typeof unitTo === 'number' && unitFrom >= unitTo) {
                 return { range: true };
             }
-
-            setTimeout(() => {
-                control.parent?.get('unitRef')?.updateValueAndValidity();
-                control.parent?.get('unitFrom')?.updateValueAndValidity();
-            });
 
             return null;
         }
