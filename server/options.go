@@ -73,7 +73,7 @@ func (options *Options) FromMap(m map[string]any) *Options {
 	case float64:
 		options.AudioConversion = uint(v)
 	default:
-		options.MaxClients = defaults.options.audioConversion
+		options.AudioConversion = defaults.options.audioConversion
 	}
 
 	switch v := m["autoPopulate"].(type) {
@@ -399,6 +399,7 @@ func (options *Options) Write(db *Database) error {
 
 	set("adminPassword", options.adminPassword)
 	set("adminPasswordNeedChange", options.adminPasswordNeedChange)
+	set("audioConversion", options.AudioConversion)
 	set("autoPopulate", options.AutoPopulate)
 	set("branding", options.Branding)
 	set("dimmerDelay", options.DimmerDelay)

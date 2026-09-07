@@ -401,11 +401,11 @@ export class RdioScannerAdminService implements OnDestroy {
 
     async logout(): Promise<boolean> {
         try {
-            this.ngHttpClient.post(
+            await firstValueFrom(this.ngHttpClient.post(
                 this.getUrl(url.logout),
                 null,
                 { headers: this.getHeaders(), responseType: 'text' },
-            );
+            ));
 
             this.configWebSocketClose();
 

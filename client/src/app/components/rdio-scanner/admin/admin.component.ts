@@ -17,7 +17,7 @@
  * ****************************************************************************
  */
 
-import { Component, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { AdminEvent, RdioScannerAdminService, Group, Tag } from './admin.service';
 
 @Component({
@@ -27,8 +27,8 @@ import { AdminEvent, RdioScannerAdminService, Group, Tag } from './admin.service
     templateUrl: './admin.component.html',
     standalone: false
 })
-export class RdioScannerAdminComponent implements OnDestroy {
-    authenticated = true;
+export class RdioScannerAdminComponent implements OnDestroy, OnInit {
+    authenticated = false;
 
     groups: Group[] = [];
 
@@ -42,6 +42,18 @@ export class RdioScannerAdminComponent implements OnDestroy {
                 this.authenticated = event.authenticated || false;
             }
         });
+    }
+
+    async ngOnInit(): Promise<void> {
+        if (!this.adminService.authenticated) {
+            return;
+        }
+
+        await this.adminService.getConfig();
+
+        if (this.adminService.authenticated) {
+            this.authenticated = true;
+        }
     }
 
     ngOnDestroy(): void {
