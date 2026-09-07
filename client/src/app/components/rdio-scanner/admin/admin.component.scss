@@ -2,6 +2,58 @@ rdio-scanner-admin {
   display: block;
   padding: 1rem;
 
+  .admin-sections {
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .admin-section {
+    background: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .admin-section-header {
+    align-items: center;
+    background: #fff;
+    border: 0;
+    color: rgba(0, 0, 0, 0.87);
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    justify-content: space-between;
+    min-height: 48px;
+    padding: 0 1rem;
+    text-align: left;
+    user-select: none;
+    width: 100%;
+  }
+
+  .admin-section-header:hover,
+  .admin-section-header:focus-visible {
+    background: rgba(0, 0, 0, 0.04);
+    outline: none;
+  }
+
+  .admin-section-title {
+    align-items: center;
+    display: flex;
+    font-weight: 500;
+
+    .mat-icon {
+      color: rgba(0, 0, 0, 0.7);
+      margin-right: 12px;
+    }
+  }
+
+  .admin-section-content {
+    padding: 0 1rem 16px;
+  }
+
+  .admin-logout {
+    border-bottom: 0;
+  }
+
   .mat-expansion-panel-header {
     user-select: none;
   }
@@ -18,11 +70,11 @@ rdio-scanner-admin {
 
 @media (max-width: 719px) {
   rdio-scanner-admin {
-    .mat-expansion-panel-header {
+    .admin-section-header {
       padding: 0 0.5rem;
     }
 
-    .mat-expansion-panel-body {
+    .admin-section-content {
       padding: 0 0.5rem 16px;
     }
   }
@@ -30,11 +82,11 @@ rdio-scanner-admin {
 
 @media (min-width: 720px) {
   rdio-scanner-admin {
-    .mat-expansion-panel-header {
+    .admin-section-header {
       padding: 0 1rem;
     }
 
-    .mat-expansion-panel-body {
+    .admin-section-content {
       padding: 0 1rem 16px;
     }
   }

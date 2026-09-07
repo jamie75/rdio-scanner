@@ -17,8 +17,13 @@
  * ****************************************************************************
  */
 
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { AdminEvent, RdioScannerAdminService, Group, Tag } from './admin.service';
+import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AdminEvent, Config, RdioScannerAdminService, Group, Tag } from './admin.service';
+import { RdioScannerAdminConfigComponent } from './config/config.component';
+import { RdioScannerAdminLogsComponent } from './logs/logs.component';
+import { RdioScannerAdminToolsComponent } from './tools/tools.component';
+
+type AdminSection = 'config' | 'logs' | 'tools';
 
 @Component({
     encapsulation: ViewEncapsulation.None,
@@ -30,11 +35,19 @@ import { AdminEvent, RdioScannerAdminService, Group, Tag } from './admin.service
 export class RdioScannerAdminComponent implements OnDestroy, OnInit {
     authenticated = false;
 
+    section: AdminSection | undefined;
+
     groups: Group[] = [];
 
     tags: Tag[] = [];
 
     private eventSubscription;
+
+    @ViewChild('configComponent') private configComponent: RdioScannerAdminConfigComponent | undefined;
+
+    @ViewChild('logsComponent') private logsComponent: RdioScannerAdminLogsComponent | undefined;
+
+    @ViewChild('toolsComponent') private toolsComponent: RdioScannerAdminToolsComponent | undefined;
 
     constructor(private adminService: RdioScannerAdminService) {
         this.eventSubscription = this.adminService.event.subscribe(async (event: AdminEvent) => {
@@ -54,6 +67,31 @@ export class RdioScannerAdminComponent implements OnDestroy, OnInit {
         if (this.adminService.authenticated) {
             this.authenticated = true;
         }
+    }
+
+    toggleSection(section: AdminSection): void {
+        if (this.section === section) {
+            this.section = undefined;
+
+            if (section === 'config') {
+                this.configComponent?.closeAll();
+            } else if (section === 'tools') {
+                this.toolsComponent?.closeAll();
+            }
+
+            return;
+        }
+
+        this.section = section;
+
+        if (section === 'logs') {
+            void this.logsComponent?.reload();
+        }
+    }
+
+    openConfig(config: Config): void {
+        this.section = 'config';
+        this.configComponent?.reset(config, { dirty: true });
     }
 
     ngOnDestroy(): void {

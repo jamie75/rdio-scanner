@@ -21,8 +21,10 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { EventEmitter, Injectable, OnDestroy } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { firstValueFrom, timer } from 'rxjs';
+import { firstValueFrom, Subscription, timer } from 'rxjs';
 import { AppUpdateService } from '../../../shared/update/update.service';
+
+const CONFIG_WEBSOCKET_MAX_RECONNECT_ATTEMPTS = 3;
 
 export interface Access {
     id?: string;
@@ -254,6 +256,10 @@ export class RdioScannerAdminService implements OnDestroy {
     private audioContext: AudioContext | undefined;
 
     private configWebSocket: WebSocket | undefined;
+
+    private configWebSocketReconnectAttempts = 0;
+
+    private configWebSocketReconnectTimer: Subscription | undefined;
 
     private _docker = false;
 
@@ -641,6 +647,9 @@ export class RdioScannerAdminService implements OnDestroy {
     }
 
     private configWebSocketClose(): void {
+        this.configWebSocketReconnectTimer?.unsubscribe();
+        this.configWebSocketReconnectTimer = undefined;
+
         if (this.configWebSocket instanceof WebSocket) {
             this.configWebSocket.onclose = null;
             this.configWebSocket.onmessage = null;
@@ -672,12 +681,28 @@ export class RdioScannerAdminService implements OnDestroy {
                 this.token = '';
 
                 this.event.emit({ authenticated: this.authenticated });
+
+            } else if (!this.token) {
+                return;
+
+            } else if (this.configWebSocketReconnectAttempts >= CONFIG_WEBSOCKET_MAX_RECONNECT_ATTEMPTS) {
+                this.token = '';
+
+                this.event.emit({ authenticated: false });
+
             } else {
-                timer(2000).subscribe(() => this.configWebSocketReconnect());
+                this.configWebSocketReconnectAttempts++;
+
+                this.configWebSocketReconnectTimer = timer(2000).subscribe(() => {
+                    this.configWebSocketReconnectTimer = undefined;
+                    this.configWebSocketReconnect();
+                });
             }
         };
 
         this.configWebSocket.onopen = () => {
+            this.configWebSocketReconnectAttempts = 0;
+
             this.configWebSocket?.send(this.token);
 
             if (this.configWebSocket instanceof WebSocket) {
